@@ -1,29 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { encrypt } from '@/lib/encrypt';
-
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL!;
+import { getServerAppUrl } from '@/lib/app-url';
 
 export async function GET(request: NextRequest) {
+  const appUrl = getServerAppUrl(request);
   const { searchParams } = new URL(request.url);
   const code  = searchParams.get('code');
   const state = searchParams.get('state');
   const error = searchParams.get('error');
 
   if (error || !code || !state) {
-    return NextResponse.redirect(`${APP_URL}/connect?error=withings_denied`);
+    return NextResponse.redirect(`${appUrl}/connect?error=withings_denied`);
   }
 
   let userId: string;
   try {
     userId = JSON.parse(Buffer.from(state, 'base64').toString()).userId;
   } catch {
-    return NextResponse.redirect(`${APP_URL}/connect?error=invalid_state`);
+    return NextResponse.redirect(`${appUrl}/connect?error=invalid_state`);
   }
 
   const clientId     = process.env.WITHINGS_CLIENT_ID!;
   const clientSecret = process.env.WITHINGS_CLIENT_SECRET!;
-  const redirectUri  = `${APP_URL}/api/oauth/withings/callback`;
+  const redirectUri  = `${appUrl}/api/oauth/withings/callback`;
 
   const tokenRes = await fetch('https://wbsapi.withings.net/v2/oauth2', {
     method: 'POST',
@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
 
   if (!tokenRes.ok) {
     console.error('Withings token exchange failed:', await tokenRes.text());
-    return NextResponse.redirect(`${APP_URL}/connect?error=withings_token_failed`);
+    return NextResponse.redirect(`${appUrl}/connect?error=withings_token_failed`);
   }
 
   const body   = await tokenRes.json();
@@ -48,14 +48,14 @@ export async function GET(request: NextRequest) {
 
   if (!tokens?.access_token) {
     console.error('Withings token missing:', body);
-    return NextResponse.redirect(`${APP_URL}/connect?error=withings_token_empty`);
+    return NextResponse.redirect(`${appUrl}/connect?error=withings_token_empty`);
   }
 
   const encryptedAccess  = encrypt(tokens.access_token);
   const encryptedRefresh = encrypt(tokens.refresh_token);
   const expiresAt        = new Date(Date.now() + tokens.expires_in * 1000).toISOString();
 
-  const response = NextResponse.redirect(`${APP_URL}/connect?success=withings`);
+  const response = NextResponse.redirect(`${appUrl}/connect?success=withings`);
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -91,7 +91,7 @@ export async function GET(request: NextRequest) {
 
   if (dbError) {
     console.error('Supabase upsert error:', dbError.message);
-    return NextResponse.redirect(`${APP_URL}/connect?error=db_error`);
+    return NextResponse.redirect(`${appUrl}/connect?error=db_error`);
   }
 
   return response;

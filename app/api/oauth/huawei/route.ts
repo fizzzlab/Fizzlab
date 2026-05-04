@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getServerAppUrl } from '@/lib/app-url';
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -9,7 +10,7 @@ export async function GET(request: NextRequest) {
   }
 
   const clientId    = process.env.HUAWEI_CLIENT_ID!;
-  const redirectUri = `${process.env.NEXT_PUBLIC_APP_URL}/api/oauth/huawei/callback`;
+  const redirectUri = `${getServerAppUrl(request)}/api/oauth/huawei/callback`;
 
   // Huawei Health Kit scopes — behavioural only (no heart rate / physiological)
   const scope = [

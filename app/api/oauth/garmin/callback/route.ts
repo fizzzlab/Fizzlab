@@ -3,22 +3,22 @@ import { createServerClient } from '@supabase/ssr';
 import { createHash } from 'crypto';
 import { encrypt, decrypt } from '@/lib/encrypt';
 import { getAccessToken } from '@/lib/garmin-oauth';
-
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL!;
+import { getServerAppUrl } from '@/lib/app-url';
 
 export async function GET(request: NextRequest) {
+  const appUrl = getServerAppUrl(request);
   const { searchParams } = new URL(request.url);
   const oauthToken    = searchParams.get('oauth_token');
   const oauthVerifier = searchParams.get('oauth_verifier');
 
   if (!oauthToken || !oauthVerifier) {
-    return NextResponse.redirect(`${APP_URL}/connect?error=garmin_denied`);
+    return NextResponse.redirect(`${appUrl}/connect?error=garmin_denied`);
   }
 
   // Retrieve state from encrypted cookie
   const stateCookie = request.cookies.get('garmin_oauth_state')?.value;
   if (!stateCookie) {
-    return NextResponse.redirect(`${APP_URL}/connect?error=invalid_state`);
+    return NextResponse.redirect(`${appUrl}/connect?error=invalid_state`);
   }
 
   let userId: string;
@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
     userId       = parsed.userId;
     tokenSecret  = parsed.tokenSecret;
   } catch {
-    return NextResponse.redirect(`${APP_URL}/connect?error=invalid_state`);
+    return NextResponse.redirect(`${appUrl}/connect?error=invalid_state`);
   }
 
   // Exchange for access token
@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
     accessTokenSecret = result.oauth_token_secret;
   } catch (err) {
     console.error('Garmin token exchange failed:', (err as Error).message);
-    return NextResponse.redirect(`${APP_URL}/connect?error=garmin_token_failed`);
+    return NextResponse.redirect(`${appUrl}/connect?error=garmin_token_failed`);
   }
 
   // Encrypt both tokens for storage
@@ -54,7 +54,7 @@ export async function GET(request: NextRequest) {
   // Garmin OAuth 1.0a tokens don't expire — set a far-future date
   const expiresAt = new Date(Date.now() + 10 * 365 * 24 * 60 * 60 * 1000).toISOString();
 
-  const response = NextResponse.redirect(`${APP_URL}/connect?success=garmin`);
+  const response = NextResponse.redirect(`${appUrl}/connect?success=garmin`);
 
   // Clear the temporary cookie
   response.cookies.set('garmin_oauth_state', '', { maxAge: 0, path: '/' });
@@ -93,7 +93,7 @@ export async function GET(request: NextRequest) {
 
   if (dbError) {
     console.error('Supabase upsert error:', dbError.message);
-    return NextResponse.redirect(`${APP_URL}/connect?error=db_error`);
+    return NextResponse.redirect(`${appUrl}/connect?error=db_error`);
   }
 
   return response;

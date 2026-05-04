@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import Navbar from '@/components/layout/Navbar';
+import { getRequiredAppUrl } from '@/lib/app-url';
 
 export const metadata = {
   title: 'Terms of Service | PulseTrack',
@@ -7,7 +8,7 @@ export const metadata = {
 };
 
 const LAST_UPDATED = 'February 28, 2026';
-const APP_URL      = 'https://trackingweb-liard.vercel.app';
+const APP_URL      = getRequiredAppUrl();
 
 export default function TermsPage() {
   return (

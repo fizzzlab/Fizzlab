@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/context/ToastContext';
+import { getBrowserAppUrl } from '@/lib/app-url';
 import Spinner from '@/components/ui/Spinner';
 import { Eye, EyeOff, Check, ArrowRight, ChevronDown } from 'lucide-react';
 
@@ -40,7 +41,7 @@ export default function SignUpPage() {
       email,
       password,
       options: {
-        emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback`,
+        emailRedirectTo: `${getBrowserAppUrl()}/auth/callback`,
         data: { gender, date_of_birth: dob },
       },
     });

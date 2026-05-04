@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getServerAppUrl } from '@/lib/app-url';
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -9,7 +10,7 @@ export async function GET(request: NextRequest) {
   }
 
   const clientId    = process.env.WITHINGS_CLIENT_ID!;
-  const redirectUri = `${process.env.NEXT_PUBLIC_APP_URL}/api/oauth/withings/callback`;
+  const redirectUri = `${getServerAppUrl(request)}/api/oauth/withings/callback`;
   const scope       = 'user.info,user.metrics,user.activity';
   const state       = Buffer.from(JSON.stringify({ userId })).toString('base64');
 

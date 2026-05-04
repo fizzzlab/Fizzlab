@@ -1,29 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { encrypt } from '@/lib/encrypt';
-
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL!;
+import { getServerAppUrl } from '@/lib/app-url';
 
 export async function GET(request: NextRequest) {
+  const appUrl = getServerAppUrl(request);
   const { searchParams } = new URL(request.url);
   const code  = searchParams.get('code');
   const state = searchParams.get('state');
   const error = searchParams.get('error');
 
   if (error || !code || !state) {
-    return NextResponse.redirect(`${APP_URL}/connect?error=huawei_denied`);
+    return NextResponse.redirect(`${appUrl}/connect?error=huawei_denied`);
   }
 
   let userId: string;
   try {
     userId = JSON.parse(Buffer.from(state, 'base64url').toString()).userId;
   } catch {
-    return NextResponse.redirect(`${APP_URL}/connect?error=invalid_state`);
+    return NextResponse.redirect(`${appUrl}/connect?error=invalid_state`);
   }
 
   const clientId     = process.env.HUAWEI_CLIENT_ID!;
   const clientSecret = process.env.HUAWEI_CLIENT_SECRET!;
-  const redirectUri  = `${APP_URL}/api/oauth/huawei/callback`;
+  const redirectUri  = `${appUrl}/api/oauth/huawei/callback`;
 
   // Exchange authorization code for tokens
   const tokenRes = await fetch('https://oauth-login.cloud.huawei.com/oauth2/v3/token', {
@@ -40,21 +40,21 @@ export async function GET(request: NextRequest) {
 
   if (!tokenRes.ok) {
     console.error('Huawei token exchange failed:', await tokenRes.text());
-    return NextResponse.redirect(`${APP_URL}/connect?error=huawei_token_failed`);
+    return NextResponse.redirect(`${appUrl}/connect?error=huawei_token_failed`);
   }
 
   const tokens = await tokenRes.json();
 
   if (!tokens.access_token) {
     console.error('Huawei token empty:', tokens);
-    return NextResponse.redirect(`${APP_URL}/connect?error=huawei_token_empty`);
+    return NextResponse.redirect(`${appUrl}/connect?error=huawei_token_empty`);
   }
 
   const encryptedAccess  = encrypt(tokens.access_token);
   const encryptedRefresh = encrypt(tokens.refresh_token);
   const expiresAt        = new Date(Date.now() + tokens.expires_in * 1000).toISOString();
 
-  const response = NextResponse.redirect(`${APP_URL}/connect?success=huawei`);
+  const response = NextResponse.redirect(`${appUrl}/connect?success=huawei`);
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -90,7 +90,7 @@ export async function GET(request: NextRequest) {
 
   if (dbError) {
     console.error('Supabase upsert error:', dbError.message);
-    return NextResponse.redirect(`${APP_URL}/connect?error=db_error`);
+    return NextResponse.redirect(`${appUrl}/connect?error=db_error`);
   }
 
   return response;

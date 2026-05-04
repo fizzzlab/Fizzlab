@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/context/ToastContext';
+import { getBrowserAppUrl } from '@/lib/app-url';
 import Spinner from '@/components/ui/Spinner';
 import { ArrowLeft } from 'lucide-react';
 
@@ -18,7 +19,7 @@ export default function ForgotPasswordPage() {
     if (!email) { toast.error('Email required'); return; }
     setLoading(true);
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/reset-password`,
+      redirectTo: `${getBrowserAppUrl()}/auth/reset-password`,
     });
     setLoading(false);
     if (error) {

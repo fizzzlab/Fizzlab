@@ -1,5 +1,6 @@
 import FormData from 'form-data';
 import Mailgun from 'mailgun.js';
+import { getRequiredAppUrl } from '@/lib/app-url';
 
 const mailgun = new Mailgun(FormData);
 
@@ -12,7 +13,7 @@ function getMgClient() {
 }
 
 const FROM = `PulseTrack <noreply@${process.env.MAILGUN_DOMAIN}>`;
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://trackingweb-liard.vercel.app';
+const APP_URL = getRequiredAppUrl();
 
 function emailWrapper(content: string): string {
   return `<!DOCTYPE html>

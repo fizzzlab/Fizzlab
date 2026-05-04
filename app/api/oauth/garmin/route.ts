@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getRequestToken } from '@/lib/garmin-oauth';
 import { encrypt } from '@/lib/encrypt';
+import { getServerAppUrl } from '@/lib/app-url';
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -10,7 +11,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Missing user_id' }, { status: 400 });
   }
 
-  const callbackUrl = `${process.env.NEXT_PUBLIC_APP_URL}/api/oauth/garmin/callback`;
+  const callbackUrl = `${getServerAppUrl(request)}/api/oauth/garmin/callback`;
 
   const { oauth_token, oauth_token_secret } = await getRequestToken(callbackUrl);
 

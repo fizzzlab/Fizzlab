@@ -1,4 +1,4 @@
-$base = 'https://trackingweb-liard.vercel.app'
+$base = if ($env:NEXT_PUBLIC_APP_URL) { $env:NEXT_PUBLIC_APP_URL.TrimEnd('/') } else { 'http://localhost:3000' }
 
 $routes = @(
   '/',

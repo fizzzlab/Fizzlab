@@ -87,7 +87,7 @@ export default function SignInPage() {
               <div className="flex items-center justify-between mb-1.5">
                 <label className="text-[11px] font-medium text-slate-500 uppercase tracking-widest" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Password</label>
                 <Link href="/auth/forgot-password" className="text-[11px] text-slate-600 hover:text-slate-400 transition-colors">
-                  Forgot?
+                  Forgot password?
                 </Link>
               </div>
               <div className="relative">
