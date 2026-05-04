@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import type { User } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/context/ToastContext';
 import { getBrowserAppUrl } from '@/lib/app-url';
@@ -31,13 +32,33 @@ export default function SignUpPage() {
   const passed = pwdRules.filter((r) => r.test(password)).length;
   const valid  = passed === 3 && confirm === password && agreed && email.length > 0 && gender.length > 0 && dob.length > 0;
 
+  const redirectToVerify = () => {
+    router.push(`/auth/verify?email=${encodeURIComponent(email)}`);
+  };
+
+  const resendVerification = async () => {
+    return supabase.auth.resend({
+      type: 'signup',
+      email,
+      options: {
+        emailRedirectTo: `${getBrowserAppUrl()}/auth/callback`,
+      },
+    });
+  };
+
+  const looksLikeExistingMaskedUser = (user: User | null) => {
+    const identities = user?.identities ?? [];
+    return identities.length === 0;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!agreed) { toast.error('Terms required', 'Please accept the terms.'); return; }
     if (password !== confirm) { toast.error('Mismatch', 'Passwords do not match.'); return; }
     if (password.length < 8) { toast.error('Weak password', 'Minimum 8 characters.'); return; }
+
     setLoading(true);
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -45,9 +66,45 @@ export default function SignUpPage() {
         data: { gender, date_of_birth: dob },
       },
     });
+
+    if (error) {
+      const alreadyExists = /already registered|already been registered|user already exists|email.*registered/i.test(error.message);
+      if (!alreadyExists) {
+        setLoading(false);
+        toast.error('Registration failed', error.message);
+        return;
+      }
+
+      const { error: resendError } = await resendVerification();
+      setLoading(false);
+
+      if (resendError) {
+        toast.error('Verification email not resent', resendError.message);
+        return;
+      }
+
+      toast.success('Verification email resent', 'This email already exists but is not verified yet.');
+      redirectToVerify();
+      return;
+    }
+
+    if (looksLikeExistingMaskedUser(data.user)) {
+      const { error: resendError } = await resendVerification();
+      setLoading(false);
+
+      if (resendError) {
+        toast.error('Verification email not resent', resendError.message);
+        return;
+      }
+
+      toast.success('Verification email resent', 'Use the latest email link to activate your account.');
+      redirectToVerify();
+      return;
+    }
+
     setLoading(false);
-    if (error) toast.error('Registration failed', error.message);
-    else { toast.success('Account created', 'Check your email to verify.'); router.push('/auth/verify'); }
+    toast.success('Account created', 'Check your email to verify.');
+    redirectToVerify();
   };
 
   return (
