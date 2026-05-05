@@ -19,7 +19,7 @@ export default function ForgotPasswordPage() {
     if (!email) { toast.error('Email required'); return; }
     setLoading(true);
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${getBrowserAppUrl()}/auth/reset-password`,
+      redirectTo: `${getBrowserAppUrl()}/auth/callback?next=/auth/reset-password`,
     });
     setLoading(false);
     if (error) {
