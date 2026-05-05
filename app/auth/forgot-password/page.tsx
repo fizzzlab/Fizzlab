@@ -23,7 +23,11 @@ export default function ForgotPasswordPage() {
     });
     setLoading(false);
     if (error) {
-      toast.error('Request failed', error.message);
+      if (error.message.toLowerCase().includes('rate limit')) {
+        toast.error('Too many emails', 'Please wait a few minutes before requesting another reset email.');
+      } else {
+        toast.error('Request failed', error.message);
+      }
     } else {
       setSent(true);
       toast.success('Reset email sent', 'Check your inbox for reset instructions.');

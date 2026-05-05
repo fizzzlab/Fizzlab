@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/context/ToastContext';
@@ -15,6 +15,8 @@ export default function ResetPasswordPage() {
   const [confirm,  setConfirm]  = useState('');
   const [showPwd,  setShowPwd]  = useState(false);
   const [loading,  setLoading]  = useState(false);
+  const [initializing, setInitializing] = useState(true);
+  const [ready, setReady] = useState(false);
 
   const rules = [
     { label: 'At least 8 characters',     test: (p: string) => p.length >= 8 },
@@ -22,8 +24,79 @@ export default function ResetPasswordPage() {
     { label: 'Contains uppercase letter', test: (p: string) => /[A-Z]/.test(p) },
   ];
 
+  useEffect(() => {
+    let cancelled = false;
+
+    async function prepareRecoverySession() {
+      try {
+        const url = new URL(window.location.href);
+        const code = url.searchParams.get('code');
+        const tokenHash = url.searchParams.get('token_hash');
+        const type = url.searchParams.get('type');
+        const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+        const accessToken = hashParams.get('access_token');
+        const refreshToken = hashParams.get('refresh_token');
+
+        let errorMessage: string | null = null;
+
+        if (code) {
+          const { error } = await supabase.auth.exchangeCodeForSession(code);
+          if (error) errorMessage = error.message;
+        } else if (tokenHash && type === 'recovery') {
+          const { error } = await supabase.auth.verifyOtp({
+            type: 'recovery',
+            token_hash: tokenHash,
+          });
+          if (error) errorMessage = error.message;
+        } else if (accessToken && refreshToken) {
+          const { error } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken,
+          });
+          if (error) errorMessage = error.message;
+        }
+
+        if (errorMessage) {
+          if (!cancelled) {
+            toast.error('Reset link invalid', errorMessage);
+            setReady(false);
+          }
+          return;
+        }
+
+        const { data } = await supabase.auth.getSession();
+        if (!cancelled) {
+          const hasSession = !!data.session;
+          setReady(hasSession);
+          if (!hasSession) {
+            toast.error('Reset link invalid', 'Auth session missing. Please request a new reset email.');
+          } else {
+            window.history.replaceState({}, document.title, '/auth/reset-password');
+          }
+        }
+      } catch {
+        if (!cancelled) {
+          toast.error('Reset link invalid', 'Please request a new password reset email.');
+          setReady(false);
+        }
+      } finally {
+        if (!cancelled) setInitializing(false);
+      }
+    }
+
+    prepareRecoverySession();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [toast]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!ready) {
+      toast.error('Reset link invalid', 'Please request a new password reset email.');
+      return;
+    }
     if (password !== confirm) {
       toast.error('Passwords do not match');
       return;
@@ -42,6 +115,26 @@ export default function ResetPasswordPage() {
       router.push('/auth/signin');
     }
   };
+
+  if (initializing) {
+    return (
+      <div className="page-bg min-h-screen flex items-center justify-center px-4 py-16">
+        <div className="w-full max-w-md">
+          <div className="glass-card p-8 rounded-2xl border border-[rgba(35,62,92,0.5)] text-center">
+            <div className="flex justify-center mb-4">
+              <Spinner size="lg" />
+            </div>
+            <h1 className="text-xl font-semibold text-slate-100 mb-2" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+              Preparing secure reset
+            </h1>
+            <p className="text-sm text-slate-500">
+              Validating your reset link and starting a secure password reset session.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="page-bg min-h-screen flex items-center justify-center px-4 py-16">
@@ -126,12 +219,18 @@ export default function ResetPasswordPage() {
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || !ready}
               className="btn-primary w-full py-2.5 mt-1"
             >
               {loading ? <Spinner size="sm" /> : 'Set New Password'}
             </button>
           </form>
+
+          {!ready && (
+            <p className="text-xs text-amber-400 mt-4" style={{ fontFamily: "'Inter', sans-serif" }}>
+              This reset link is no longer valid. Request a new password reset email from sign in.
+            </p>
+          )}
         </div>
       </div>
     </div>

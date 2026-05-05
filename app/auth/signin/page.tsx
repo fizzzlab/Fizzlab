@@ -60,14 +60,14 @@ export default function SignInPage() {
             <h1 className="text-2xl font-bold text-white mb-1.5" style={{ fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '-0.02em' }}>
               Welcome back
             </h1>
-            <p className="text-sm text-slate-500">Sign in to your account</p>
+            <p className="text-sm text-slate-500">Sign in with the email address you used to register</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
 
             {/* Email */}
             <div>
-              <label className="block text-[11px] font-medium text-slate-500 mb-1.5 uppercase tracking-widest" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Email</label>
+              <label className="block text-[11px] font-medium text-slate-500 mb-1.5 uppercase tracking-widest" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Email Address</label>
               <input
                 type="email"
                 className="w-full rounded-lg px-3.5 py-2.5 text-sm text-slate-200 placeholder:text-slate-700 outline-none transition-all"
@@ -80,6 +80,9 @@ export default function SignInPage() {
                 autoComplete="email"
                 required
               />
+              <p className="mt-1.5 text-[11px] text-slate-600" style={{ fontFamily: "'Inter', sans-serif" }}>
+                Use the email address you signed up with.
+              </p>
             </div>
 
             {/* Password */}
@@ -133,6 +136,9 @@ export default function SignInPage() {
         <p className="text-center text-sm text-slate-600 mt-7">
           Don&apos;t have an account?{' '}
           <Link href="/auth/signup" className="text-slate-400 hover:text-white transition-colors font-medium">Create one free</Link>
+        </p>
+        <p className="text-center text-xs text-slate-700 mt-3">
+          Need account access help? Use <span className="text-slate-500">Forgot password?</span> with your registered email.
         </p>
       </div>
 
