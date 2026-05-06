@@ -107,12 +107,15 @@ export default function ResetPasswordPage() {
     }
     setLoading(true);
     const { error } = await supabase.auth.updateUser({ password });
-    setLoading(false);
     if (error) {
+      setLoading(false);
       toast.error('Reset failed', error.message);
     } else {
       toast.success('Password reset', 'Your new password has been set. Please sign in.');
-      router.push('/auth/signin');
+      await supabase.auth.signOut();
+      router.replace('/auth/signin');
+      router.refresh();
+      window.location.assign('/auth/signin');
     }
   };
 
