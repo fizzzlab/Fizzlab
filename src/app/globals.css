@@ -1,0 +1,243 @@
+@import "tailwindcss";
+
+:root {
+  --background: #edf2ff;
+  --foreground: #10203a;
+}
+
+html[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  transition: background-color 0.2s ease, color 0.2s ease, filter 0.2s ease;
+}
+
+html[data-theme="dark"] body {
+  filter: invert(1) hue-rotate(180deg);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+::selection {
+  background: rgba(37, 99, 235, 0.18);
+}
+
+.dashboard-shell {
+  background:
+    radial-gradient(circle at top left, rgba(59, 130, 246, 0.12), transparent 28%),
+    radial-gradient(circle at 82% 10%, rgba(16, 185, 129, 0.08), transparent 22%),
+    linear-gradient(180deg, #f4f7ff 0%, #eef2fb 100%);
+}
+
+.admin-shell {
+  background:
+    radial-gradient(circle at top left, rgba(59, 130, 246, 0.05), transparent 28%),
+    radial-gradient(circle at 82% 10%, rgba(16, 185, 129, 0.04), transparent 22%),
+    linear-gradient(180deg, #ffffff 0%, #fbfbfe 100%);
+}
+
+.dashboard-sidebar {
+  width: 64px;
+  flex: 0 0 64px;
+  transition: width 1s ease, flex-basis 1s ease;
+}
+
+.admin-sidebar {
+  width: 64px;
+  flex: 0 0 64px;
+  transition: width 1s ease, flex-basis 1s ease;
+}
+
+.dashboard-sidebar:hover {
+  width: 200px;
+  flex-basis: 250px;
+}
+
+.admin-sidebar:hover {
+  width: 200px;
+  flex-basis: 250px;
+}
+
+.dashboard-sidebar .sidebar-fade {
+  opacity: 0;
+  transition: opacity 0.9s ease;
+}
+
+.admin-sidebar .sidebar-fade {
+  opacity: 0;
+  transition: opacity 0.9s ease;
+}
+
+.dashboard-sidebar:hover .sidebar-fade {
+  opacity: 1;
+}
+
+.admin-sidebar:hover .sidebar-fade {
+  opacity: 1;
+}
+
+.landing-shell {
+  background:
+    radial-gradient(circle at 20% 8%, rgba(118, 150, 255, 0.16), transparent 24%),
+    radial-gradient(circle at 86% 14%, rgba(113, 234, 208, 0.18), transparent 18%),
+    linear-gradient(180deg, #eff4ff 0%, #edf2ff 46%, #f5f7ff 100%);
+}
+
+.about-us-shell {
+  background: #ffffff;
+}
+
+/* Collapsed vs expanded logo swap */
+.dashboard-sidebar .logo-wrap .logo-full { display: none; }
+.dashboard-sidebar:hover .logo-wrap .logo-full { display: block; }
+.dashboard-sidebar .logo-wrap .logo-collapsed { display: block; }
+.dashboard-sidebar:hover .logo-wrap .logo-collapsed { display: none; }
+
+.admin-sidebar .logo-wrap .logo-full { display: none; }
+.admin-sidebar:hover .logo-wrap .logo-full { display: block; }
+.admin-sidebar .logo-wrap .logo-collapsed { display: block; }
+.admin-sidebar:hover .logo-wrap .logo-collapsed { display: none; }
+
+/* Profile block becomes circular when collapsed */
+.dashboard-sidebar:not(:hover) .profile-block {
+  justify-content: center !important;
+  padding: 6px !important;
+  border-radius: 9999px !important;
+}
+.dashboard-sidebar:hover .profile-block {
+  padding: 12px !important;
+  border-radius: 16px !important;
+  justify-content: flex-start !important;
+}
+
+.admin-sidebar:not(:hover) .profile-block {
+  justify-content: center !important;
+  padding: 6px !important;
+  border-radius: 9999px !important;
+}
+.admin-sidebar:hover .profile-block {
+  padding: 12px !important;
+  border-radius: 16px !important;
+  justify-content: flex-start !important;
+}
+
+/* Center nav items when collapsed and hide labels smoothly */
+.dashboard-sidebar:not(:hover) nav a {
+  width: 44px !important;
+  height: 44px !important;
+  aspect-ratio: 1 / 1;
+  justify-content: center !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  gap: 0 !important;
+}
+.dashboard-sidebar:not(:hover) .small-img {
+  display: flex;
+  align-items: center;
+  justify-content: center !important;
+  line-height: 0;
+}
+
+.admin-sidebar:not(:hover) nav a {
+  width: 44px !important;
+  height: 44px !important;
+  aspect-ratio: 1 / 1;
+  justify-content: center !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  gap: 0 !important;
+}
+.admin-sidebar:not(:hover) .small-img {
+  display: flex;
+  align-items: center;
+  justify-content: center !important;
+  line-height: 0;
+}
+
+.dashboard-sidebar:not(:hover) .profile-block-item-1 {
+  width: "full";
+  height: "full";
+  aspect-ratio: 1/1;
+}
+
+.admin-sidebar:not(:hover) .profile-block-item-1 {
+  width: "full";
+  height: "full";
+  aspect-ratio: 1/1;
+}
+
+.dashboard-sidebar:not(:hover) {
+  display: flex;
+  align-items: center;
+}
+
+.admin-sidebar:not(:hover) {
+  display: flex;
+  align-items: center;
+}
+
+.dashboard-sidebar:not(:hover) .profile-block-item-2 {
+  display: none;
+}
+
+.admin-sidebar:not(:hover) .profile-block-item-2 {
+  display: none;
+}
+
+.dashboard-sidebar .sidebar-fade {
+  max-width: 0;
+  opacity: 0;
+  transition: max-width 0.9s ease, opacity 0.9s ease;
+}
+.dashboard-sidebar:hover .sidebar-fade {
+  max-width: 240px;
+  opacity: 1;
+}
+
+.admin-sidebar .sidebar-fade {
+  max-width: 0;
+  opacity: 0;
+  transition: max-width 0.9s ease, opacity 0.9s ease;
+}
+.admin-sidebar:hover .sidebar-fade {
+  max-width: 240px;
+  opacity: 1;
+}
+
+/* Compact logout button when collapsed */
+.dashboard-sidebar:not(:hover) .logout-btn {
+  width: 44px !important;
+  border-radius: 9999px !important;
+  padding: 0 !important;
+  justify-content: center !important;
+}
+.dashboard-sidebar:not(:hover) .logout-btn .sidebar-fade { display: none; }
+
+.admin-sidebar:not(:hover) .logout-btn {
+  width: 44px !important;
+  border-radius: 9999px !important;
+  padding: 0 !important;
+  justify-content: center !important;
+}
+.admin-sidebar:not(:hover) .logout-btn .sidebar-fade { display: none; }
+
+@media (max-width: 639px) {
+  .dashboard-sidebar,
+  .admin-sidebar {
+    display: none !important;
+  }
+}
+
